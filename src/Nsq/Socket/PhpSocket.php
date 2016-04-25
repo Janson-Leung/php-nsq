@@ -95,12 +95,15 @@ class PhpSocket implements SocketInterface
         if (!count($msgs)) {
             throw new \InvalidArgumentException("Expecting at least one message to publish.");
         }
-        $cmd = sprintf("MPUB %s\n%s", $topic, pack('N', count($msgs)));
+        
+        $messages = '';
         foreach ($msgs as $msg) {
             $msg = $msg->payload();
-            $cmd .= pack('N', strlen($msg));
-            $cmd .= $msg;
+            $messages .= pack('N', strlen($msg));
+            $messages .= $msg;
         }
+        
+        $cmd = sprintf("MPUB %s\n%s%s", $topic, pack('N', strlen($messages)), pack('N', count($msgs))) . $messages;
         $this->write($cmd);
         return $this->response();
     }
